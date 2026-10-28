@@ -22,6 +22,7 @@
 import net from 'node:net';
 import dns from 'node:dns/promises';
 import { parseIP } from './network.js';
+import { config } from '../config.js';
 
 /* ── Daftar port umum ─────────────────────────────────────────────────── */
 
@@ -121,6 +122,17 @@ function probePort(host, port, timeoutMs) {
 export async function portScan(targetRaw, opts = {}) {
   const raw = String(targetRaw || '').trim();
   if (!raw) return { ok: false, error: 'Target kosong.' };
+
+  // Instance publik dapat mematikan fitur aktif ini (ENABLE_PORT_SCAN=0).
+  if (!config.portScanEnabled) {
+    return {
+      ok: false,
+      error: 'Port scan dinonaktifkan pada instance ini (ENABLE_PORT_SCAN=0).',
+      note:
+        'Port scan adalah satu-satunya pemeriksaan aktif. Instance publik ' +
+        'sebaiknya menonaktifkannya agar tidak dipakai memindai host lain.',
+    };
+  }
 
   const host = raw.replace(/^[a-z]+:\/\//i, '').split(/[/?#]/)[0].split(':')[0];
   if (!host) return { ok: false, error: `Target tidak valid: "${targetRaw}"` };

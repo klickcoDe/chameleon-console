@@ -90,4 +90,17 @@ export const config = {
   concurrency: Number(process.env.CONCURRENCY || 12),
   timeoutMs: Number(process.env.TIMEOUT_MS || 12000),
   historyFile: process.env.HISTORY_FILE || 'data/history.jsonl',
+
+  // CORS untuk deployment terpisah: UI di Vercel, API di container/VPS.
+  // Kosong = CORS mati (UI dan API satu origin, seperti mode lokal/Docker).
+  // Contoh: CORS_ORIGIN=https://chameleon.vercel.app
+  // Wildcard subdomain didukung: https://*.vercel.app
+  corsOrigins: String(process.env.CORS_ORIGIN || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean),
+
+  // Port scan adalah satu-satunya fitur aktif. Matikan untuk instance publik
+  // (ENABLE_PORT_SCAN=0) agar tidak dipakai memindai host milik orang lain.
+  portScanEnabled: bool(process.env.ENABLE_PORT_SCAN, true),
 };

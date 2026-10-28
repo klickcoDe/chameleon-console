@@ -5,6 +5,25 @@ Semua perubahan penting pada proyek ini dicatat di berkas ini.
 Format mengikuti [Keep a Changelog](https://keepachangelog.com/id/1.1.0/)
 dan proyek ini memakai [Semantic Versioning](https://semver.org/lang/id/).
 
+## [Belum dirilis]
+
+### Ditambahkan
+
+- **Deployment UI terpisah**: UI statis bisa dihosting di Vercel sementara API
+  tetap di container. `public/config.js` + `scripts/vercel-config.mjs` mengisi
+  `apiBase` dari env `CHAMELEON_API_URL` saat build; `vercel.json` dan
+  `.vercelignore` sudah disiapkan.
+- **CORS opt-in** lewat `CORS_ORIGIN` (dukungan wildcard subdomain) dan
+  penanganan preflight `OPTIONS`, agar UI di domain lain bisa memanggil API.
+- **`ENABLE_PORT_SCAN=0`** untuk mematikan satu-satunya fitur aktif pada
+  instance publik.
+- `docs/vercel.md`: panduan dua platform, keamanan, dan troubleshooting.
+
+### Diubah
+
+- `public/app.js` memakai `apiUrl()` sehingga semua request (termasuk ekspor)
+  mengikuti `apiBase`; mode satu domain tetap berjalan tanpa konfigurasi.
+
 ## [1.0.0] — 2026-10-28
 
 Rilis publik pertama: **Chameleon Console** — konsol investigasi OSINT lokal,

@@ -683,6 +683,8 @@ cp .env.example .env
 | `CONCURRENCY` | `12` | Batas request paralel |
 | `TIMEOUT_MS` | `12000` | Timeout per request |
 | `TRUST_PROXY` | — | Set `1` bila di belakang reverse proxy sendiri, agar `X-Forwarded-For` dipakai untuk audit & rate limit. Default mati karena header itu bisa dipalsukan klien. |
+| `CORS_ORIGIN` | — | Origin UI bila UI dihosting terpisah (mis. Vercel). Pisahkan dengan koma; wildcard subdomain didukung (`https://app-*.vercel.app`). Kosong = CORS mati. |
+| `ENABLE_PORT_SCAN` | `1` | Set `0` untuk mematikan port scan — disarankan untuk instance publik. |
 | `OS_FAVOR_IPV6` | — | Set `1` untuk membatalkan IPv4-first (lihat catatan jaringan) |
 
 Server tetap jalan tanpa `.env` sama sekali — modul yang butuh key hanya
@@ -793,3 +795,7 @@ Kalau Anda ingin menyediakan instance publik untuk orang lain, perhatikan:
    hanya untuk sistem Anda sendiri atau dengan izin tertulis.
 5. **Backup `data/`.** Riwayat investigasi dan cache OFAC ada di sana —
    ikuti [docs/deploy.md](docs/deploy.md) bagian backup.
+6. **UI dan API boleh dipisah.** UI statis di Vercel + API di container
+   adalah opsi yang didukung — lihat [docs/vercel.md](docs/vercel.md).
+   Ingat: CORS bukan autentikasi, dan matikan `ENABLE_PORT_SCAN` untuk
+   instance publik.

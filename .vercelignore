@@ -1,0 +1,13 @@
+# Yang tidak perlu diunggah ke Vercel: hanya UI statis yang dipakai.
+src/
+test/
+deploy/
+data/
+.github/
+.gitlab/
+docs/
+Dockerfile
+docker-compose.yml
+.gitlab-ci.yml
+*.md
+.env

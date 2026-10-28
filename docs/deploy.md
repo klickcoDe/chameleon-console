@@ -1,7 +1,11 @@
 # Deploy
 
 Panduan produksi untuk Chameleon Console. Aplikasi ini nol dependensi:
-satu-satunya prasyarat adalah **Node.js ≥ 20** (atau Docker).
+satu-satunya prasyarat adalah **Node.js ≥ 20.12** (atau Docker).
+
+> Ingin UI di CDN Vercel sementara API tetap di container? Lihat
+> [vercel.md](vercel.md). Panduan di bawah adalah deployment satu domain
+> (UI + API dari server yang sama).
 
 > **Penting:** server bawaan **tidak punya login**. Kalau diakses dari
 > internet, wajib ditaruh di belakang reverse proxy dengan autentikasi.

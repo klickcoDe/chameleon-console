@@ -608,6 +608,38 @@ async function graphFromBody(body) {
 
 /* ── Server ───────────────────────────────────────────────────────────── */
 
+/**
+ * Cocokkan origin dengan aturan CORS. Mendukung "*" dan wildcard subdomain
+ * (`https://*.vercel.app`) supaya preview deployment Vercel juga diizinkan.
+ */
+function matchOrigin(rule, origin) {
+  if (rule === '*') return true;
+  if (!rule.includes('*')) return rule === origin;
+  const pattern = rule
+    .replace(/[.+?^${}()|[\]\\]/g, '\\$&')
+    .replace(/\*/g, '.*');
+  return new RegExp(`^${pattern}$`).test(origin);
+}
+
+/**
+ * Pasang header CORS bila origin request diizinkan. CORS sengaja opt-in
+ * (CORS_ORIGIN) supaya deployment satu domain tidak membuka akses tambahan.
+ */
+function applyCors(req, res) {
+  const origin = req.headers.origin;
+  if (!origin || config.corsOrigins.length === 0) return false;
+
+  const rule = config.corsOrigins.find((r) => matchOrigin(r, origin));
+  if (!rule) return false;
+
+  res.setHeader('Access-Control-Allow-Origin', rule === '*' ? '*' : origin);
+  res.setHeader('Vary', 'Origin');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Max-Age', '86400');
+  return true;
+}
+
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   const pathname = url.pathname;
@@ -616,6 +648,8 @@ const server = http.createServer(async (req, res) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Referrer-Policy', 'no-referrer');
   res.setHeader('X-Frame-Options', 'DENY');
+
+  applyCors(req, res);
 
   if (req.method === 'OPTIONS') {
     res.writeHead(204, { Allow: 'GET, POST, DELETE, OPTIONS' });

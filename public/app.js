@@ -12,10 +12,29 @@ function esc(s) {
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
+/**
+ * Basis URL API.
+ *
+ * Kosong = origin yang sama (mode lokal/Docker, UI dan API satu server).
+ * Diisi lewat public/config.js bila UI dihosting terpisah dari backend,
+ * misalnya UI di Vercel dan API di container/VPS.
+ */
+const API_BASE = String(window.CHAMELEON_CONFIG?.apiBase || '').replace(/\/+$/, '');
+
+/** Gabungkan basis API dengan path, tanpa mengubah path itu sendiri. */
+function apiUrl(path) {
+  return `${API_BASE}${path}`;
+}
+
 async function api(path, opts = {}) {
-  const res = await fetch(path, {
-    headers: { 'Content-Type': 'application/json' },
+  // Content-Type hanya untuk request berisi body; GET tanpa header itu tidak
+  // memicu preflight CORS saat UI dan API berada di origin berbeda.
+  const headers = { ...(opts.headers || {}) };
+  if (opts.body !== undefined) headers['Content-Type'] = 'application/json';
+
+  const res = await fetch(apiUrl(path), {
     ...opts,
+    headers,
     body: opts.body ? JSON.stringify(opts.body) : undefined,
   });
   const text = await res.text();
@@ -1367,7 +1386,7 @@ $$('[data-export]').forEach((btn) => {
     if (!lastReport) return;
     const format = btn.dataset.export;
 
-    const res = await fetch(`/api/export/${format}`, {
+    const res = await fetch(apiUrl(`/api/export/${format}`), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(lastReport.input),
