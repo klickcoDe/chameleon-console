@@ -1,0 +1,30 @@
+#!/bin/sh
+#
+# Tolak push langsung ke branch rilis.
+#
+# Aktifkan sekali per clone:
+#   git config core.hooksPath .githooks
+#
+# `dev` sengaja TIDAK diblokir: itu branch kerja harian. Yang dikunci hanya
+# `main`/`master`, yang harus menerima perubahan lewat Pull/Merge Request
+# dari `dev`.
+#
+# Hook ini hanya jaring pengaman lokal — bisa dilewati dengan
+# `git push --no-verify`. Proteksi sebenarnya ada di sisi server
+# (protected branch GitLab / branch protection GitHub).
+
+protected="refs/heads/main refs/heads/master"
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  for p in $protected; do
+    if [ "$remote_ref" = "$p" ]; then
+      branch=${remote_ref#refs/heads/}
+      echo "⛔ Push langsung ke '$branch' diblokir." >&2
+      echo "   Commit ke 'dev' dulu:  git switch dev" >&2
+      echo "   Lalu buka Pull/Merge Request 'dev' -> '$branch'." >&2
+      exit 1
+    fi
+  done
+done
+
+exit 0

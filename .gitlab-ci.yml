@@ -13,6 +13,7 @@ workflow:
   rules:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH == "dev"
     - if: $CI_COMMIT_TAG
     - if: $CI_PIPELINE_SOURCE == 'web'
 
@@ -45,6 +46,7 @@ syntax:
   rules:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH == "dev"
     - if: $CI_COMMIT_TAG
     - if: $CI_PIPELINE_SOURCE == 'web'
 
@@ -64,6 +66,7 @@ hygiene:
   rules:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH == "dev"
     - if: $CI_PIPELINE_SOURCE == 'web'
 
 # ── 3. Smoke test (163 cek) ──────────────────────────────────────────────
@@ -84,6 +87,7 @@ smoke:
   rules:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH == "dev"
     - if: $CI_COMMIT_TAG
     - if: $CI_PIPELINE_SOURCE == 'web'
 

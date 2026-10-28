@@ -2,13 +2,49 @@
 
 Terima kasih telah ingin berkontribusi pada **Chameleon Console** — alat investigasi OSINT lokal, open source (MIT), tanpa dependensi eksternal.
 
-## Cara berkontribusi
+## Alur branch
 
-1. **Fork** repositori ini (GitHub atau GitLab).
-2. Buat branch fitur: `git checkout -b fitur/nama-fitur`
-3. Lakukan perubahan, lalu uji dengan `npm run smoke`.
-4. Commit dengan pesan yang jelas (bahasa Indonesia atau Inggris).
-5. Push branch, lalu buka **Pull Request** (GitHub) atau **Merge Request** (GitLab).
+Hanya ada dua branch permanen:
+
+| Branch | Fungsi | Aturan |
+|---|---|---|
+| `main` | Rilis stabil, sumber tag `v*` | **Dilarang push langsung.** Hanya menerima merge dari `dev` lewat PR/MR |
+| `dev` | Branch kerja harian | Push langsung boleh; yang dilarang hanya force-push dan penghapusan |
+
+Alur:
+
+```bash
+git switch dev
+git pull --ff-only
+
+# ... perubahan ...
+
+npm run smoke          # 163 cek, lakukan sebelum push
+git add -A
+git commit -m "fix: deskripsi singkat"
+git push
+```
+
+Rilis dilakukan dengan PR/MR **`dev` → `main`**, lalu tag `v*` di `main`.
+Tidak ada branch per fitur: semua pekerjaan menumpuk di `dev`.
+
+### Hook pengaman
+
+Repo menyertakan `.githooks/pre-push` yang menolak push langsung ke `main`
+(atau `master`). Aktifkan sekali per clone:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+Hook hanya jaring pengaman lokal (bisa dilewati dengan `--no-verify`).
+Proteksi sebenarnya ada di sisi server: *branch protection* GitHub dan
+*protected branch* GitLab.
+
+### Fork
+
+Kontributor luar tanpa akses tulis: **Fork** repo, buat branch di fork,
+lalu buka PR/MR ke `dev` milik repo utama.
 
 Template issue dan merge request sudah tersedia di `.gitlab/` bila Anda
 memakai GitLab — cukup pilih template saat membuat issue/MR agar laporan

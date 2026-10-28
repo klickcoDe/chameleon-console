@@ -749,14 +749,33 @@ Repositori ini dipelihara di dua platform (mirror dua arah):
 | [GitHub](https://github.com/klickcoDe/chameleon-console) | Repo utama, Actions, Releases |
 | [GitLab](https://gitlab.com/klickcoDe/chameleon-console) | Mirror, GitLab CI/CD, Releases, Issues & Merge Requests |
 
+### Alur branch
+
+Dua branch permanen: **`dev`** (kerja harian, push langsung) dan **`main`**
+(rilis, sumber tag `v*`, push langsung diblokir). Tidak ada branch per fitur.
+
+```
+dev  ──push langsung──►  dev  ──PR/MR──►  main  ──tag v*──►  rilis
+```
+
+Sebelum push ke `dev`, jalankan `npm run smoke`. CI tetap berjalan otomatis
+di setiap push ke `dev` dan setiap PR/MR ke `main`.
+
 ### Push ke kedua remote
 
 ```bash
 git remote add origin  git@github.com:ANDA/chameleon-console.git
 git remote add gitlab  git@gitlab.com:ANDA/chameleon-console.git
 
-git push -u origin main
-git push -u gitlab main
+# branch permanen (main hanya untuk inisialisasi awal)
+git push -u origin main dev
+git push -u gitlab main dev
+
+# kerja harian: langsung ke dev
+git push origin dev
+git push gitlab dev
+
+# tag rilis (dari main, setelah PR/MR dev -> main)
 git push origin --tags
 git push gitlab --tags
 ```
