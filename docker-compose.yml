@@ -1,0 +1,43 @@
+# Chameleon Console — Docker Compose
+#
+# Jalankan:
+#   docker compose up -d
+#
+# Buka: http://localhost:3000
+#
+# Konfigurasi:
+#   Salin .env.example menjadi .env, lalu isi variabel yang diperlukan
+#   (CONTACT_NAME/CONTACT_EMAIL wajib agar API pihak ketiga tidak memblokir).
+#
+# Volume:
+#   chameleon-data  -> riwayat investigasi (data/history.jsonl) & cache OFAC
+
+services:
+  chameleon-console:
+    build: .
+    container_name: chameleon-console
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    volumes:
+      - chameleon-data:/app/data
+    # Batasi sumber daya agar tidak mengganggu host saat scan/jaringan berat.
+    cpus: "1"
+    mem_limit: 512m
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:3000/api/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    networks:
+      - chameleon-net
+
+networks:
+  chameleon-net:
+    driver: bridge
+
+volumes:
+  chameleon-data:

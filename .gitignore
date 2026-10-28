@@ -1,0 +1,17 @@
+# Konfigurasi lokal — jangan pernah di-commit
+.env
+.env.*
+!.env.example
+
+# Riwayat investigasi berisi data pribadi
+data/*.jsonl
+data/
+
+# Log & temporer
+*.log
+npm-debug.log*
+.DS_Store
+
+# Dependency (proyek ini sengaja tanpa dependensi, tapi jaga-jaga)
+node_modules/
+.aider*

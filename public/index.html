@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chameleon Console</title>
+<meta name="description" content="Chameleon Console — konsol investigasi OSINT lokal: enumerasi username, verifikasi nomor, DNS &amp; WHOIS, subdomain, profil IP, forensik hash, reputasi, kelemahan web, intelijen ancaman, dan ekspor ke Maltego.">
+<link rel="stylesheet" href="/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23030705'/><circle cx='16' cy='16' r='8' fill='none' stroke='%2339ff14' stroke-width='3'/></svg>">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="logo">CC</div>
+      <div>
+        <h1>Chameleon Console</h1>
+        <p class="sub">Consol investigasi &mdash; v2.0</p>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <span id="healthBadge" class="led led-muted">memuat</span>
+      <a class="btn btn-sm btn-ghost" href="/api/health" target="_blank" rel="noopener">API</a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div class="console">
+
+    <!-- ── SIDEBAR: daftar tool, dibangun dari /api/tools ── -->
+    <nav class="side" aria-label="Daftar tool">
+      <div class="side-head">Modul</div>
+      <div id="toolList">
+        <div class="side-group">
+          <div class="side-item" style="cursor:default;border-left-color:var(--line-hot);">
+            <span class="dot"></span> Memuat daftar tool&hellip;
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ── AREA KERJA ── -->
+    <div class="stage">
+
+      <!-- Peringatan: dibariskan di kolom konten, sejajar dengan kartu-kartu di bawahnya -->
+      <section class="notice">
+        <strong>&#9888; Gunakan secara bertanggung jawab.</strong>
+        Seluruh tool di sini hanya membaca <em>data publik</em> &mdash; halaman profil terbuka,
+        API yang terbuka untuk umum, dan log yang dipublikasikan. Gunakan untuk memverifikasi
+        data milik Anda sendiri, riset jurnalistik, atau investigasi yang Anda berwenang.
+        Mengumpulkan data pribadi seseorang di banyak negara bisa menjadi pelanggaran hukum,
+        meskipun datanya publik. Periksa hukum yang berlaku di yurisdiksi Anda.
+      </section>
+
+      <!-- ── FORMULIR UTAMA ── -->
+      <section class="card">
+        <form id="osintForm" autocomplete="off">
+          <div class="card-head">
+            <h2><span class="idx">01</span> Formulir Investigasi</h2>
+            <p>Isi minimal satu field &mdash; semakin lengkap, semakin tajam hasilnya.</p>
+          </div>
+
+          <div class="grid">
+            <label class="field">
+              <span class="label">Nama Lengkap</span>
+              <input type="text" name="name" placeholder="Budi Santoso" maxlength="100">
+              <small>Identity resolution &amp; generate dork.</small>
+            </label>
+
+            <label class="field">
+              <span class="label">Username Sosial</span>
+              <input type="text" name="username" placeholder="budi.santoso" maxlength="60">
+              <small>Tanpa @ &mdash; dicek lintas dozens platform.</small>
+            </label>
+
+            <label class="field">
+              <span class="label">No. WhatsApp / HP</span>
+              <input type="tel" name="phone" placeholder="0812-3456-7890" maxlength="30">
+              <small>Operator, Telegram, format bebas.</small>
+            </label>
+
+            <label class="field">
+              <span class="label">Email</span>
+              <input type="email" name="email" placeholder="budi@contoh.com" maxlength="120">
+              <small>Cek kebocoran &mdash; butuh HIBP API key.</small>
+            </label>
+
+            <label class="field">
+              <span class="label">Domain</span>
+              <input type="text" name="domain" placeholder="contoh.com" maxlength="120">
+              <small>DNS, WHOIS, subdomain dari CT log.</small>
+            </label>
+
+            <label class="field">
+              <span class="label">URL Website</span>
+              <input type="text" name="url" placeholder="https://contoh.com" maxlength="200">
+              <small>Header keamanan &amp; fingerprint situs.</small>
+            </label>
+
+            <label class="field">
+              <span class="label">IP Address</span>
+              <input type="text" name="ip" placeholder="8.8.8.8" maxlength="45">
+              <small>Profil, ASN, kepemilikan blok.</small>
+            </label>
+
+            <label class="field">
+              <span class="label">Alamat Dompet Kripto</span>
+              <input type="text" name="wallet" placeholder="bc1... atau 0x..." maxlength="80">
+              <small>Jejak BTC / ETH &mdash; saldo &amp; riwayat on-chain.</small>
+            </label>
+
+            <label class="field field-wide">
+              <span class="label">Lokasi</span>
+              <input type="text" name="location" placeholder="Bandung, Jawa Barat" maxlength="150">
+              <small>Kabupaten/kota, provinsi, atau negara &mdash; geocode ke koordinat.</small>
+            </label>
+          </div>
+
+          <details class="opts">
+            <summary>&#9881; Opsi Lanjutan</summary>
+            <div class="opts-grid">
+              <label><input type="checkbox" name="checkPhone" checked> Cek nomor (WA / TG / operator)</label>
+              <label><input type="checkbox" name="checkPhoneInfo" checked> Info nomor &amp; area/zona waktu</label>
+              <label><input type="checkbox" name="checkContacts" checked> Nama &amp; tag kontak (jejak publik)</label>
+              <label><input type="checkbox" name="checkSocial" checked> Cari username lintas platform</label>
+              <label><input type="checkbox" name="checkLocation" checked> Geocode lokasi</label>
+              <label><input type="checkbox" name="checkBreach" checked> Cek kebocoran email</label>
+              <label><input type="checkbox" name="checkDomain"> Recon domain (DNS + WHOIS + subdomain)</label>
+              <label><input type="checkbox" name="checkNetwork"> Profil jaringan / IP</label>
+              <label><input type="checkbox" name="checkWebsec"> Kelemahan website (TLS + path terbuka)</label>
+            </div>
+            <label class="field">
+              <span class="label">Catatan Investigasi</span>
+              <textarea name="notes" rows="2" maxlength="1000"
+                        placeholder="Konteks kasus, sumber rujukan, tujuan riset..."></textarea>
+            </label>
+          </details>
+
+          <div class="actions">
+            <button type="submit" class="btn btn-primary btn-run" id="runBtn">
+              &#9656; Jalankan Investigasi
+            </button>
+            <button type="reset" class="btn btn-ghost">Reset</button>
+            <span class="spinner" id="spinner" hidden></span>
+            <span class="logline" id="logline" hidden></span>
+          </div>
+        </form>
+      </section>
+
+      <!-- ── AREA HASIL ── -->
+      <div id="results" hidden>
+
+        <section class="card">
+          <div class="card-head"><h2><span class="idx">02</span> Ringkasan</h2></div>
+          <div id="summary"></div>
+          <div class="actions">
+            <button class="btn btn-sm" data-export="csv">CSV &rarr; Maltego</button>
+            <button class="btn btn-sm" data-export="clipboard">Salin Clipboard</button>
+            <button class="btn btn-sm" data-export="links">Salin Link</button>
+            <button class="btn btn-sm btn-ghost" data-export="json">JSON Arsip</button>
+            <button class="btn btn-sm btn-warn" id="copyBtn">Salin Laporan</button>
+          </div>
+        </section>
+
+        <section class="card" id="phoneCard" hidden>
+          <div class="card-head"><h2><span class="idx">03</span> Nomor Telepon / WhatsApp</h2></div>
+          <div id="phoneOut"></div>
+        </section>
+
+        <section class="card" id="reputationCard" hidden>
+          <div class="card-head">
+            <h2><span class="idx">03b</span> Reputasi &amp; Tag Nomor</h2>
+            <p>Skor spam crowdsourced + pola nomor &mdash; indikator, bukan vonis.</p>
+          </div>
+          <div id="reputationOut"></div>
+        </section>
+
+        <section class="card" id="phoneInfoCard" hidden>
+          <div class="card-head">
+            <h2><span class="idx">03c</span> Info Nomor &amp; Lokasi Pendaftaran</h2>
+            <p>Negara, operator, tipe baris, area &amp; zona waktu &mdash; padanan <em>phone_number_cheker</em>.</p>
+          </div>
+          <div id="phoneInfoOut"></div>
+        </section>
+
+        <section class="card" id="contactsCard" hidden>
+          <div class="card-head">
+            <h2><span class="idx">03d</span> Nama &amp; Tag Kontak</h2>
+            <p>Nama &amp; label yang paling sering dipakai orang lain untuk nomor ini.</p>
+          </div>
+          <div id="contactsOut"></div>
+        </section>
+
+        <section class="card" id="mentionsCard" hidden>
+          <div class="card-head">
+            <h2><span class="idx">03e</span> Sebaran Publik (Cek Pos)</h2>
+            <p>Posting, pengumuman, dan halaman publik yang menyebut nomor tersebut.</p>
+          </div>
+          <div id="mentionsOut"></div>
+        </section>
+
+        <section class="card" id="websecCard" hidden>
+          <div class="card-head">
+            <h2><span class="idx">05b</span> Kelemahan Website</h2>
+            <p>Penilaian pasif: sertifikat TLS, file sensitif, security.txt &mdash; tanpa eksploitasi.</p>
+          </div>
+          <div id="websecOut"></div>
+        </section>
+
+        <section class="card" id="threatCard" hidden>
+          <div class="card-head">
+            <h2><span class="idx">06b</span> Intelijen Ancaman</h2>
+            <p>Jejak dompet kripto &amp; pencarian CVE.</p>
+          </div>
+          <div id="threatOut"></div>
+        </section>
+
+        <section class="card" id="socialCard" hidden>
+          <div class="card-head">
+            <h2><span class="idx">04</span> Profil Media Sosial</h2>
+            <p id="socialMeta"></p>
+          </div>
+          <div id="socialOut"></div>
+        </section>
+
+        <section class="card" id="domainCard" hidden>
+          <div class="card-head">
+            <h2><span class="idx">05</span> Domain &amp; Infrastruktur</h2>
+            <p id="domainMeta"></p>
+          </div>
+          <div id="domainOut"></div>
+        </section>
+
+        <section class="card" id="networkCard" hidden>
+          <div class="card-head"><h2><span class="idx">06</span> Jaringan &amp; IP</h2></div>
+          <div id="networkOut"></div>
+        </section>
+
+        <section class="card" id="locationCard" hidden>
+          <div class="card-head"><h2><span class="idx">07</span> Lokasi</h2></div>
+          <div id="locationOut"></div>
+        </section>
+
+        <section class="card warn" id="breachCard" hidden>
+          <div class="card-head"><h2><span class="idx">08</span> Kebocoran Data</h2></div>
+          <div id="breachOut"></div>
+        </section>
+
+        <section class="card warn" id="dorksCard" hidden>
+          <div class="card-head">
+            <h2><span class="idx">09</span> Search Dorks</h2>
+            <p>Query siap pakai &mdash; gabungkan semua data di atas.</p>
+          </div>
+          <div id="dorksOut"></div>
+        </section>
+
+        <section class="card" id="graphCard" hidden>
+          <div class="card-head">
+            <h2><span class="idx">10</span> Entity Graph &mdash; Maltego</h2>
+            <p id="graphMeta"></p>
+          </div>
+          <div id="graphOut"></div>
+        </section>
+
+        <section class="card">
+          <div class="card-head"><h2><span class="idx">11</span> Riwayat Investigasi</h2></div>
+          <div id="historyOut" class="history"></div>
+        </section>
+
+      </div>
+
+      <!-- ── PANEL REKON TERPISAH (bukan bagian dari laporan investigasi) ── -->
+      <section class="card">
+        <div class="card-head">
+          <h2><span class="idx">&mdash;</span> Cek Pos &amp; Recon</h2>
+          <p>Alat mandiri: sebaran publik, nama &amp; tag kontak, port scan ringan,
+             routing BGP, intelijen IP, vendor MAC, dan cek sanksi OFAC.</p>
+        </div>
+
+        <div class="grid">
+          <label class="field">
+            <span class="label">Nomor Telepon</span>
+            <input type="tel" id="reconPhone" placeholder="0812-3456-7890" maxlength="30">
+            <small>Untuk sebaran publik &amp; nama/tag kontak.</small>
+          </label>
+
+          <label class="field">
+            <span class="label">Host / IP Target</span>
+            <input type="text" id="reconTarget" placeholder="8.8.8.8 atau contoh.com" maxlength="200">
+            <small>Untuk port scan &amp; routing BGP. IP untuk BGP, host untuk port scan.</small>
+          </label>
+
+          <label class="field">
+            <span class="label">Port (opsional)</span>
+            <input type="text" id="reconPorts" placeholder="22,80,443" maxlength="120">
+            <small>Kosongkan untuk memakai daftar port umum.</small>
+          </label>
+
+          <label class="field">
+            <span class="label">Alamat MAC (opsional)</span>
+            <input type="text" id="reconMac" placeholder="AA:BB:CC:DD:EE:FF" maxlength="20">
+            <small>Lookup vendor OUI.</small>
+          </label>
+
+          <label class="field field-wide">
+            <span class="label">Nama untuk Cek Sanksi</span>
+            <input type="text" id="reconName" placeholder="Nama orang / organisasi" maxlength="120">
+            <small>Dicocokkan dengan daftar OFAC SDN (unduhan resmi, cache lokal 24 jam).</small>
+          </label>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-sm" data-recon="cek-pos">&#9656; Cek Pos Lengkap</button>
+          <button class="btn btn-sm" data-recon="mentions">Sebaran Publik</button>
+          <button class="btn btn-sm" data-recon="contacts">Nama &amp; Tag Kontak</button>
+          <button class="btn btn-sm" data-recon="port-scan">Port Scan</button>
+          <button class="btn btn-sm" data-recon="bgp">Routing BGP</button>
+          <button class="btn btn-sm" data-recon="ip-intel">IP Intel</button>
+          <button class="btn btn-sm" data-recon="mac-vendor">Vendor MAC</button>
+          <button class="btn btn-sm" data-recon="sanctions-search">Sanksi OFAC</button>
+          <span class="spinner" id="reconSpinner" hidden></span>
+        </div>
+
+        <div id="reconOut" class="mt"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-head"><h2><span class="idx">&mdash;</span> Setup &amp; Integrasi</h2></div>
+        <div id="setupOut"></div>
+      </section>
+
+    </div>
+  </div>
+</main>
+
+<footer class="wrap foot">
+  <strong>Chameleon Console</strong> &mdash; panel investigasi OSINT lokal &middot; tanpa dependensi eksternal &middot;
+  hanya membaca sumber data publik &middot; dijalankan lokal di mesin Anda
+</footer>
+
+<script src="/app.js"></script>
+</body>
+</html>

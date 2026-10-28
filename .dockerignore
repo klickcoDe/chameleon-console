@@ -1,0 +1,27 @@
+# Konfigurasi lokal & rahasia — jangan masuk ke image
+.env
+.env.*
+!.env.example
+
+# Riwayat investigasi berisi data pribadi — jangan bawa dalam image
+data/
+*.jsonl
+
+# Log & temporer
+*.log
+npm-debug.log*
+.DS_Store
+
+# Dependency & cache (proyek zero-dependency, tapi jaga-jaga)
+node_modules/
+npm-cache/
+
+# Git & alat bantu
+.git/
+.gitignore
+.aider*
+.dockerignore
+
+# Dokumentasi pengembang (tidak diperlukan runtime)
+CONTRIBUTING.md
+SECURITY.md
