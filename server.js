@@ -761,7 +761,19 @@ ${line('  Maltego   Transform Provider aktif (port ' + config.port + ')')}
 `);
 });
 
-process.on('SIGINT', () => {
-  console.log('\nServer dihentikan.');
-  process.exit(0);
-});
+process.on('SIGINT', () => shutdown('SIGINT'));
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+
+/**
+ * Matikan server dengan rapi. Docker mengirim SIGTERM saat `stop`/`restart`;
+ * tanpa handler ini, koneksi yang sedang berjalan diputus paksa.
+ */
+function shutdown(signal) {
+  console.log(`\n${signal} diterima — menutup server...`);
+  server.close(() => {
+    console.log('Server dihentikan.');
+    process.exit(0);
+  });
+  // Jangan menggantung selamanya bila ada koneksi yang tidak kunjung tutup.
+  setTimeout(() => process.exit(0), 10_000).unref();
+}

@@ -22,6 +22,12 @@ npm-cache/
 .aider*
 .dockerignore
 
-# Dokumentasi pengembang (tidak diperlukan runtime)
+# Dokumentasi pengembang & tooling (tidak diperlukan runtime)
 CONTRIBUTING.md
 SECURITY.md
+CHANGELOG.md
+docs/
+test/
+.github/
+.gitlab/
+.gitlab-ci.yml

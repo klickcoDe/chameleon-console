@@ -5,7 +5,7 @@
 [![Rilis](https://img.shields.io/badge/rilis-v1.0.0-39ff14)](CHANGELOG.md)
 [![Lisensi: MIT](https://img.shields.io/badge/lisensi-MIT-blue)](LICENSE)
 [![Dependensi: 0](https://img.shields.io/badge/dependensi-0-brightgreen)](package.json)
-[![Node.js](https://img.shields.io/badge/node-%3E%3D20-339933?logo=node.js&logoColor=white)](package.json)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D20.12-339933?logo=node.js&logoColor=white)](package.json)
 
 Konsol investigasi OSINT lokal dengan antarmuka web bertema neon. Satu form,
 delapan kolom input (nama, username, nomor, email, domain, URL, IP, lokasi),
@@ -37,7 +37,7 @@ node server.js          # atau: npm start
 
 Buka <http://localhost:3000>
 
-Butuh Node.js 20 ke atas. Uji seluruh modul dengan:
+Butuh Node.js 20.12 ke atas (memakai `process.loadEnvFile` bawaan). Uji seluruh modul dengan:
 
 ```bash
 npm run smoke
@@ -62,15 +62,21 @@ Buka <http://localhost:3000>
 Atau dengan `docker run` langsung:
 
 ```bash
-docker build -t chameleon-console .
-docker run --rm -p 3000:3000 \
-  -v $(pwd)/.env:/app/.env:ro \
+docker build -t chameleon-console:1.0.0 .
+docker run -d --name chameleon-console --restart unless-stopped \
+  -p 127.0.0.1:3000:3000 \
+  --env-file .env \
   -v chameleon-data:/app/data \
-  chameleon-console
+  --memory 512m --cpus 1 \
+  chameleon-console:1.0.0
 ```
 
 Riwayat investigasi (`data/history.jsonl`) dan cache OFAC disimpan dalam
 volume `chameleon-data`, sehingga tidak hilang saat container dihapus.
+
+> **Untuk production**, ikuti [docs/deploy.md](docs/deploy.md): systemd,
+> reverse proxy + HTTPS + autentikasi, `TRUST_PROXY`, backup, dan checklist
+> go-live. Server bawaan tidak punya login.
 
 Pemeriksaan pihak ketiga (mesin pencari, RDAP, RIPEstat) akan ditandai
 **dilewati** — bukan "gagal" — kalau sumbernya sedang tidak merespons.
@@ -775,33 +781,15 @@ Kalau Anda ingin menyediakan instance publik untuk orang lain, perhatikan:
    menjalankan investigasi melalui instance Anda.
 2. **Reverse proxy + HTTPS.** Gunakan Certbot / Let's Encrypt untuk TLS.
    Karena server berada di belakang proxy, set `TRUST_PROXY=1` agar
-   `X-Forwarded-For` dipakai untuk audit dan rate limit. Contoh potongan Nginx:
+   `X-Forwarded-For` dipakai untuk audit dan rate limit.
 
-   ```nginx
-   server {
-     listen 80;
-     server_name osint.contoh.com;
-     return 301 https://$server_name$request_uri;
-   }
-
-   server {
-     listen 443 ssl;
-     server_name osint.contoh.com;
-
-     ssl_certificate /etc/letsencrypt/live/osint.contoh.com/fullchain.pem;
-     ssl_certificate_key /etc/letsencrypt/live/osint.contoh.com/privkey.pem;
-
-     location / {
-       proxy_pass http://127.0.0.1:3000;
-       proxy_set_header Host $host;
-       proxy_set_header X-Real-IP $remote_addr;
-       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-       proxy_set_header X-Forwarded-Proto $scheme;
-     }
-   }
-   ```
+   Konfigurasi siap pakai:
+   - Nginx: [`deploy/nginx.conf`](deploy/nginx.conf) (rate limit, Basic Auth, timeout 180 s)
+   - Caddy: [`deploy/Caddyfile`](deploy/Caddyfile) (TLS otomatis)
 
 3. **Batasi rate.** Rate limit internal adalah 60 req/menit per IP. Tambahkan
    limit di Nginx / WAF untuk proteksi lebih lanjut.
 4. **Jangan expose port scan ke internet tanpa kontrol.** Modul `port-scan`
    hanya untuk sistem Anda sendiri atau dengan izin tertulis.
+5. **Backup `data/`.** Riwayat investigasi dan cache OFAC ada di sana —
+   ikuti [docs/deploy.md](docs/deploy.md) bagian backup.

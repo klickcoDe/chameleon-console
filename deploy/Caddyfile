@@ -1,0 +1,39 @@
+# Contoh Caddyfile — TLS otomatis, tanpa Certbot.
+#
+# Pasang di /etc/caddy/Caddyfile lalu: systemctl reload caddy
+#
+# PENTING: set TRUST_PROXY=1 di .env karena semua request masuk lewat Caddy.
+
+osint.contoh.com {
+	encode zstd gzip
+
+	# Server tidak punya login sendiri. Lindungi dengan Basic Auth...
+	basic_auth {
+		admin $2a$14$GANTI_DENGAN_HASH_Bcrypt
+	}
+	# ...atau hapus blok di atas dan pakai forward_auth ke Authelia/Authentik.
+
+	# Penyimpanan riwayat bisa besar; batasi body tetap kecil.
+	request_body {
+		max_size 1MB
+	}
+
+	reverse_proxy 127.0.0.1:3000 {
+		header_up X-Real-IP {remote_host}
+		transport http {
+			read_timeout 180s
+			write_timeout 180s
+		}
+	}
+
+	header {
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy no-referrer
+		-Server
+	}
+
+	log {
+		output file /var/log/caddy/chameleon.log
+	}
+}

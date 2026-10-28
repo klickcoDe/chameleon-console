@@ -18,14 +18,24 @@ services:
     container_name: chameleon-console
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      # Hanya loopback: reverse proxy di host yang meneruskan ke container.
+      # Ganti menjadi "3000:3000" HANYA bila Anda sadar port ini terbuka ke
+      # jaringan dan server tidak punya login sendiri.
+      - "127.0.0.1:3000:3000"
     env_file:
-      - .env
+      # `required: false` (Docker Compose >= 2.24) supaya `docker compose up`
+      # tetap jalan tanpa .env — aplikasi punya nilai bawaan yang aman.
+      # Tanpa .env, CONTACT_EMAIL akan `admin@localhost` dan Nominatim/ip-api
+      # berhak menolak; isi .env untuk pemakaian nyata.
+      - path: .env
+        required: false
     volumes:
       - chameleon-data:/app/data
     # Batasi sumber daya agar tidak mengganggu host saat scan/jaringan berat.
     cpus: "1"
     mem_limit: 512m
+    # Beri waktu menyelesaikan request yang sedang jalan saat stop/restart.
+    stop_grace_period: 15s
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:3000/api/health"]
       interval: 30s

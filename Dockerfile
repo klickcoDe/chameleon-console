@@ -23,7 +23,7 @@ WORKDIR /app
 
 # Proyek ini sengaja zero-dependency (hanya modul bawaan Node),
 # jadi tidak ada build step / npm install. Salin semua sumbernya.
-COPY server.js package.json README.md ./
+COPY server.js package.json README.md LICENSE ./
 COPY src ./src
 COPY public ./public
 
