@@ -15,6 +15,12 @@ Keuntungan jalur ini: semua fitur tetap utuh — riwayat persisten, cache OFAC,
 rate limit per proses, dan port scan — karena backend-nya proses Node biasa,
 bukan function.
 
+> **Peringatan urutan deploy.** Jangan deploy UI statis ke produksi sebelum
+> backend hidup. Vercel (sejak Juni 2026) otomatis mendeteksi `server.js` di
+> root dan menjalankannya sebagai backend. Begitu deploy statis masuk, fungsi
+> itu hilang dan `/api/*` akan 404 sampai `CHAMELEON_API_URL` menunjuk ke
+> backend yang benar-benar jalan.
+
 ---
 
 ## 1. Deploy backend dulu
@@ -69,6 +75,19 @@ Harapan: `access-control-allow-origin: https://chameleon-console.vercel.app`.
 Saat build, `scripts/vercel-config.mjs` menulis `public/config.js` berisi
 `apiBase` dari env tersebut. Kalau `CHAMELEON_API_URL` kosong, build
 **sengaja gagal** agar UI tidak terlanjur ter-deploy dengan API yang salah.
+
+### Kalau Vercel mendeteksi ini sebagai "Node"
+
+Proyek yang pernah di-deploy tanpa `vercel.json` bisa tersetel **Framework
+Preset: Node**, lalu Vercel menjalankan `server.js` sebagai fungsi. Itu bukan
+yang diinginkan di jalur ini. Dua hal di repo sudah mengunci mode statis:
+
+- `vercel.json` memakai `"framework": null` → preset **Other** (statis).
+- `.vercelignore` mengecualikan `server.js` dan `src/`, sehingga tidak ada
+  backend yang bisa terdeteksi.
+
+Periksa hasilnya di **Deployment → Build Logs**: tidak boleh ada `λ` (fungsi).
+Kalau masih ada, pastikan `vercel.json` di root ikut terunggah.
 
 Lewat CLI (opsional):
 

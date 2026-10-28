@@ -1,4 +1,10 @@
 # Yang tidak perlu diunggah ke Vercel: hanya UI statis yang dipakai.
+#
+# `server.js` dan `src/` sengaja dikecualikan. Vercel (sejak Juni 2026) otomatis
+# mendeteksi `server.js` di root dan menjalankannya sebagai backend. Tanpa
+# pengecualian ini, proyek bisa ter-build sebagai Node server, bukan UI statis.
+# API Chameleon Console harus berjalan di container/VPS terpisah.
+server.js
 src/
 test/
 deploy/
