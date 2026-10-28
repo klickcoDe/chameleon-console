@@ -110,13 +110,27 @@ export async function geolocateIP(ip) {
 }
 
 /**
- * Ambil IP publik dari request HTTP masuk (dipakai untuk log audit).
- * Menghormati header proxy yang umum.
+ * Ambil IP publik dari request HTTP masuk (dipakai untuk audit & rate limit).
+ *
+ * `X-Forwarded-For` HANYA dipercaya bila TRUST_PROXY=1. Tanpa itu, siapa pun
+ * bisa memalsukan header tersebut untuk menghindari rate limit atau mengotori
+ * log audit. Aktifkan hanya bila server benar-benar berada di belakang reverse
+ * proxy yang menimpa header ini (Nginx/Caddy/Traefik).
  */
 export function clientIP(req) {
+  const remote = req.socket?.remoteAddress || null;
+  if (!config.trustProxy) return cleanIP(remote);
+
   const xff = req.headers['x-forwarded-for'];
-  if (xff) return String(xff).split(',')[0].trim();
-  return req.socket?.remoteAddress || null;
+  if (!xff) return cleanIP(remote);
+  const first = String(xff).split(',')[0].trim();
+  return cleanIP(first) || cleanIP(remote);
+}
+
+/** Buang prefiks IPv4-mapped (::ffff:1.2.3.4 -> 1.2.3.4) agar kunci stabil. */
+function cleanIP(ip) {
+  if (!ip) return null;
+  return String(ip).replace(/^::ffff:/i, '');
 }
 
 export const nominatimPolicy = {

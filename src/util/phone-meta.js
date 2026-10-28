@@ -14,7 +14,7 @@
  *     itu untuk alasan privasi. Yang bisa dihitung adalah WILAYAH DAFTAR
  *     (area code / prefix operator), bukan lokasi pemakaian saat ini.
  *   - Tidak ada data HLR. Lokasi kota yang sebenarnya hanya ada di Home
- *     Location Register operator (data privat, dipolejasa).
+ *     Location Register operator (data privat, milik operator).
  *
  * Yang dikembalikan:
  *   - negara + zona waktu (dari kode negara ITU-T E.164)

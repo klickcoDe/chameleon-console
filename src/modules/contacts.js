@@ -6,7 +6,7 @@
  *   - Nama yang muncul bersama nomor di halaman publik (nama pemanggil,
  *     nama toko, nama admin).
  *   - Label peran/kategori: "CS Tokopedia", "admin", "penjual", "akun pinjol".
- *   - IndikasiZkategori risiko: "penipu", "spam", "blacklist".
+ *   - Indikasi kategori risiko: "penipu", "spam", "blacklist".
  *
  * BAGAIMANA CARANYA BUKAN DENGAN MENGIKIS TRUECALLER
  * -------------------------------------------------

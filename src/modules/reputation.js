@@ -20,7 +20,7 @@
  *    - Pola nomor: prefix yang memang dipakai kampanye spam/telemarketing
  *    - Jejak publik nomor di web (dork, sudah ada di modul breach.js)
  *
- * 3. Modul ini mengembalikan SKOR dan ALASAN, bukanvonis final.
+ * 3. Modul ini mengembalikan SKOR dan ALASAN, bukan vonis final.
  *    Skor spam otomatis tidak pernah jadi bukti tunggal — selalu periksa
  *    sendiri sebelum mengambil keputusan.
  */

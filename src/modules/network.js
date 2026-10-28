@@ -20,7 +20,7 @@ const IPV4_RE = /^(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1
 
 /**
  * Validasi alamat IP. IPv6 sengaja dibuat longgar karena bentuknya sangat
- * varied (kompresi, prefiks panjang, IPv4-mapped) — validasi ketat akan
+ * beragam (kompresi, prefiks panjang, IPv4-mapped) — validasi ketat akan
  * menolak alamat valid, dan membiarkan alamat tidak valid lolos lebih buruk.
  */
 export function parseIP(raw) {

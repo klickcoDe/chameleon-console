@@ -7,7 +7,7 @@
  * 1. TRANSFORM PROVIDER  (jalur utama, otomatis)
  *    Protokol Transform: Maltego melakukan POST dengan JSON berisi `entity`
  *    dan `transform.fields.run`; server membalas `transforms` +
- *    `returnedEntities`. Kekcik kanan entity di graph -> pilih transform ->
+ *    `returnedEntities`. Klik kanan entity di graph -> pilih transform ->
  *    Run, dan hasilnya langsung tergambar. Inilah satu-satunya cara resmi
  *    untuk mendorong hasil investigasi ke graph yang SEDANG BERJALAN.
  *

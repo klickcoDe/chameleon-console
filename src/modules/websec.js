@@ -3,7 +3,7 @@
  * kelihatan dari luar.
  *
  * Yang dilakukan modul ini:
- *   - Membaca sertifikat TLS (chain, masa berlaku, SAN, Easter Egg)
+ *   - Membaca sertifikat TLS (chain, masa berlaku, SAN, issuer)
  *   - Menilai header keamanan yang sudah ada di domain.js
  *   - Memeriksa keberadaan security.txt (RFC 9116) & robots.txt
  *   - Mengecek sejumlah path sensitif yang TERBUKA (GET tunggal per path)

@@ -1,0 +1,88 @@
+# CI GitHub Actions — cermin dari pipeline GitLab (.gitlab-ci.yml).
+#
+# Proyek ini nol dependensi, jadi tidak ada `npm install`: cukup Node bawaan.
+# Yang diuji:
+#   1. sintaks semua berkas JS (cepat, tanpa jaringan)
+#   2. smoke test 163 cek (kegagalan jaringan ditandai "dilewati", bukan gagal)
+#   3. higiene repo: data investigasi & .env tidak boleh ikut ter-commit
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  syntax:
+    name: Sintaks (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['20', '22', '24']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: node --check semua berkas
+        run: |
+          set -e
+          for f in server.js src/*.js src/util/*.js src/modules/*.js public/app.js test/smoke.mjs; do
+            node --check "$f"
+          done
+          echo "OK: semua berkas lolos node --check"
+
+  hygiene:
+    name: Higiene repo
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pastikan data investigasi & .env tidak ter-track
+        run: |
+          set -e
+          if git ls-files --error-unmatch .env >/dev/null 2>&1; then
+            echo "::error::.env ikut ter-commit"; exit 1
+          fi
+          if git ls-files data | grep -q .; then
+            echo "::error::data/ (riwayat investigasi) ikut ter-commit"; exit 1
+          fi
+          echo "OK: tidak ada .env atau data/ yang ter-track"
+
+  smoke:
+    name: Smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: syntax
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      # Cache daftar OFAC (6 MB) agar pipeline berikutnya tidak mengunduh ulang.
+      - uses: actions/cache@v4
+        with:
+          path: data/ofac
+          key: ofac-${{ github.run_id }}
+          restore-keys: ofac-
+      - name: npm run smoke
+        run: npm run smoke 2>&1 | tee smoke.log
+      - name: Simpan log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-log
+          path: smoke.log
+          retention-days: 7

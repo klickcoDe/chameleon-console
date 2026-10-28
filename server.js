@@ -171,7 +171,7 @@ function rateLimited(ip) {
   const list = (hits.get(ip) || []).filter((t) => now - t < WINDOW_MS);
   list.push(now);
   hits.set(ip, list);
-  // Bersihkanoccasionally agar Map tidak membengkak.
+  // Bersihkan sesekali agar Map tidak membengkak.
   if (hits.size > 5000) {
     for (const [k, v] of hits) {
       if (!v.some((t) => now - t < WINDOW_MS)) hits.delete(k);
@@ -186,7 +186,7 @@ const routes = {
   'GET /api/health': async () => ({
     ok: true,
     service: 'chameleon-console',
-    version: '2.1.0',
+    version: config.version,
     uptime: process.uptime(),
     config: envSummary(),
     modules: {
@@ -588,10 +588,13 @@ const routes = {
     return { ok: true, data: readHistory(Math.min(limit, 500)) };
   },
 
-  'DELETE /api/history': async () => ({
-    ok: clearHistory(),
-    message: clearHistory ? 'Riwayat dibersihkan.' : 'Gagal membersihkan riwayat.',
-  }),
+  'DELETE /api/history': async () => {
+    const cleared = clearHistory();
+    return {
+      ok: cleared,
+      message: cleared ? 'Riwayat dibersihkan.' : 'Gagal membersihkan riwayat.',
+    };
+  },
 };
 
 /**

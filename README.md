@@ -1,5 +1,12 @@
 # Chameleon Console
 
+[![CI](https://github.com/klickcoDe/chameleon-console/actions/workflows/ci.yml/badge.svg)](https://github.com/klickcoDe/chameleon-console/actions/workflows/ci.yml)
+[![Pipeline](https://gitlab.com/klickcoDe/chameleon-console/badges/main/pipeline.svg)](https://gitlab.com/klickcoDe/chameleon-console/-/pipelines)
+[![Rilis](https://img.shields.io/badge/rilis-v1.0.0-39ff14)](CHANGELOG.md)
+[![Lisensi: MIT](https://img.shields.io/badge/lisensi-MIT-blue)](LICENSE)
+[![Dependensi: 0](https://img.shields.io/badge/dependensi-0-brightgreen)](package.json)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D20-339933?logo=node.js&logoColor=white)](package.json)
+
 Konsol investigasi OSINT lokal dengan antarmuka web bertema neon. Satu form,
 delapan kolom input (nama, username, nomor, email, domain, URL, IP, lokasi),
 dan 39 tool di belakangnya: enumerasi sosial, verifikasi nomor,
@@ -12,6 +19,10 @@ ringan**, **recon ala OSIRIS** (BGP, vendor MAC, sanksi OFAC), **forensik**
 CVE), geocode, cek kebocoran, dan ekspor entity ke Maltego.
 
 **Nol dependensi.** Hanya modul bawaan Node.js — tidak ada `npm install`.
+
+## Tampilan
+
+![Antarmuka Chameleon Console: sidebar 39 tool di kiri, form delapan kolom di tengah](docs/screenshot.png)
 
 ---
 
@@ -115,7 +126,7 @@ Variabel yang mengatur semua ini: `--rail` (272 px), `--gutter` (18 px),
 
 ---
 
-## Modul (v2.1)
+## Modul (v1.0.0)
 
 ### Domain & Web (`src/modules/domain.js`)
 
@@ -665,6 +676,7 @@ cp .env.example .env
 | `MALTEGO_PROVIDER_URL` | `http://localhost:3000/api/maltego/transform` | URL yang didaftarkan sebagai Transform Provider |
 | `CONCURRENCY` | `12` | Batas request paralel |
 | `TIMEOUT_MS` | `12000` | Timeout per request |
+| `TRUST_PROXY` | — | Set `1` bila di belakang reverse proxy sendiri, agar `X-Forwarded-For` dipakai untuk audit & rate limit. Default mati karena header itu bisa dipalsukan klien. |
 | `OS_FAVOR_IPV6` | — | Set `1` untuk membatalkan IPv4-first (lihat catatan jaringan) |
 
 Server tetap jalan tanpa `.env` sama sekali — modul yang butuh key hanya
@@ -704,19 +716,54 @@ Chameleon Console dilisensikan di bawah [MIT License](LICENSE). Anda bebas
 memakai, memodifikasi, mendistribusikan, dan membangun produk komersial di
 atasnya.
 
-Langkah publish ke GitHub (atau platform Git lainnya):
+Repositori ini dipelihara di dua platform (mirror dua arah):
+
+| Platform | Fungsi |
+|---|---|
+| [GitHub](https://github.com/klickcoDe/chameleon-console) | Repo utama, Actions, Releases |
+| [GitLab](https://gitlab.com/klickcoDe/chameleon-console) | Mirror, GitLab CI/CD, Releases, Issues & Merge Requests |
+
+### Push ke kedua remote
 
 ```bash
-git init
-git add .
-git commit -m "Initial release: Chameleon Console v2.1.0"
-git branch -M main
-git remote add origin https://github.com/ANDA/chameleon-console.git
+git remote add origin  git@github.com:ANDA/chameleon-console.git
+git remote add gitlab  git@gitlab.com:ANDA/chameleon-console.git
+
 git push -u origin main
+git push -u gitlab main
+git push origin --tags
+git push gitlab --tags
 ```
 
-Lalu buat **Release** di GitHub dan pasang tag `v2.1.0` agar pengguna
-mudah mengunduh versi yang stabil.
+Atau jadikan GitLab sebagai *pull mirror* / *push mirror* di
+**Settings > Repository > Mirroring repositories** supaya kedua sisi selalu
+sinkron tanpa push manual.
+
+### Rilis
+
+Push tag `v1.0.0` memicu GitHub Actions dan GitLab CI. Di GitLab, job
+`release` otomatis membuat entri **Deploy > Releases** dari tag tersebut;
+di GitHub, buat Release dari tag yang sama (atau jalankan `gh release create`).
+
+```bash
+git tag -a v1.0.0 -m "Chameleon Console 1.0.0"
+git push origin v1.0.0 && git push gitlab v1.0.0
+```
+
+## CI/CD
+
+Kedua platform memakai pemeriksaan yang sama:
+
+| Tahap | GitHub Actions | GitLab CI |
+|---|---|---|
+| Cek sintaks (`node --check`) | `syntax` (Node 20/22/24) | `syntax` |
+| Higiene repo (`.env`/`data` tidak ter-commit) | `hygiene` | `hygiene` |
+| Smoke test (`npm run smoke`) + artifact log | `smoke` | `smoke` |
+| Pemindaian rahasia | — | `Secret-Detection` (template resmi) |
+| Release dari tag `v*` | via Releases | job `release` otomatis |
+
+Proyek ini tetap nol dependensi, jadi pipeline tidak menjalankan
+`npm install` sama sekali — hanya Node bawaan.
 
 ## Deployment Publik (Instance Umum)
 
@@ -727,7 +774,8 @@ Kalau Anda ingin menyediakan instance publik untuk orang lain, perhatikan:
    (Basic Auth, Authelia, Cloudflare Access, dll.) agar tidak sembarang orang
    menjalankan investigasi melalui instance Anda.
 2. **Reverse proxy + HTTPS.** Gunakan Certbot / Let's Encrypt untuk TLS.
-   Contoh potongan Nginx:
+   Karena server berada di belakang proxy, set `TRUST_PROXY=1` agar
+   `X-Forwarded-For` dipakai untuk audit dan rate limit. Contoh potongan Nginx:
 
    ```nginx
    server {
@@ -757,7 +805,3 @@ Kalau Anda ingin menyediakan instance publik untuk orang lain, perhatikan:
    limit di Nginx / WAF untuk proteksi lebih lanjut.
 4. **Jangan expose port scan ke internet tanpa kontrol.** Modul `port-scan`
    hanya untuk sistem Anda sendiri atau dengan izin tertulis.
-
----
-
-## Struktur (v2.1)

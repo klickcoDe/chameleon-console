@@ -4,9 +4,26 @@
  */
 
 // WAJIB pertama: memuat .env sebelum konfigurasi dibaca, supaya file ini
-// bisa diimpor dari mana saja (server, test, skrip) tanpa selalu Remember
+// bisa diimpor dari mana saja (server, test, skrip) tanpa harus selalu
 // mengimpor loadenv.js lebih dulu.
 import './loadenv.js';
+import fs from 'node:fs';
+
+/**
+ * Versi diambil dari package.json supaya tidak pernah melenceng dari
+ * /api/health, UI, dan dokumentasi. Kalau berkasnya tidak ada (mis. dipanggil
+ * dari salinan parsial), jatuh ke 0.0.0 alih-alih melempar error.
+ */
+function readVersion() {
+  try {
+    const pkg = JSON.parse(
+      fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8')
+    );
+    return pkg.version || '0.0.0';
+  } catch {
+    return '0.0.0';
+  }
+}
 
 const bool = (v, dflt = false) => {
   if (v === undefined || v === null || v === '') return dflt;
@@ -16,6 +33,13 @@ const bool = (v, dflt = false) => {
 export const config = {
   port: Number(process.env.PORT || 3000),
   host: process.env.HOST || '0.0.0.0',
+
+  // Versi tunggal untuk seluruh aplikasi (health check, UI, README).
+  version: readVersion(),
+
+  // Percayai header X-Forwarded-For hanya di belakang reverse proxy sendiri.
+  // Default mati: tanpa proxy, header itu bisa dipalsukan klien.
+  trustProxy: bool(process.env.TRUST_PROXY, false),
 
   contactName: process.env.CONTACT_NAME || 'Chameleon Console',
   contactEmail: process.env.CONTACT_EMAIL || 'admin@localhost',

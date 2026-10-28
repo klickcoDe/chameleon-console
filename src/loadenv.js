@@ -51,7 +51,7 @@ if (envLoaded) {
   try {
     process.loadEnvFile(envFile);
   } catch (err) {
-    // Berkas ada tapi rusak — jangan sampe	server gagal start.
+    // Berkas ada tapi rusak — jangan sampai server gagal start.
     console.warn(
       `[config] .env tidak bisa dibaca (${err.message}). ` +
         'Memakai konfigurasi bawaan. Periksa formatnya.'
@@ -67,5 +67,8 @@ export function envSummary() {
     hibpKey: has('HIBP_API_KEY'),
     metaWaToken: has('META_WA_TOKEN'),
     metaWaPhoneId: has('META_PHONE_NUMBER_ID'),
+    trustProxy: ['1', 'true', 'yes', 'on'].includes(
+      String(process.env.TRUST_PROXY || '').toLowerCase()
+    ),
   };
 }

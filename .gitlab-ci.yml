@@ -1,0 +1,112 @@
+# Pipeline GitLab CI/CD — cermin dari GitHub Actions (.github/workflows/ci.yml).
+#
+# Fitur GitLab yang dipakai:
+#   - stages + job paralel & `interruptible` (pipeline lama dibatalkan saat push baru)
+#   - cache data/ofac (6 MB) agar tidak mengunduh ulang tiap pipeline
+#   - artifacts (log smoke test) untuk investigasi kegagalan
+#   - Secret Detection bawaan GitLab (template resmi, gratis di semua tier)
+#   - Release otomatis dari tag `v*` (menu Deploy > Releases)
+#
+# Proyek ini nol dependensi: tidak ada `npm install`, hanya Node bawaan.
+
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG
+    - if: $CI_PIPELINE_SOURCE == 'web'
+
+stages:
+  - test
+  - security
+  - release
+
+default:
+  image: node:20-alpine
+  interruptible: true
+  before_script: []
+
+variables:
+  NODE_ENV: test
+  # Perkecil noise npm yang tidak relevan.
+  NPM_CONFIG_FUND: 'false'
+  NPM_CONFIG_AUDIT: 'false'
+
+# ── 1. Sintaks: cepat, tanpa jaringan ────────────────────────────────────
+syntax:
+  stage: test
+  script:
+    - |
+      set -e
+      for f in server.js src/*.js src/util/*.js src/modules/*.js public/app.js test/smoke.mjs; do
+        node --check "$f"
+      done
+      echo "OK: semua berkas lolos node --check"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG
+    - if: $CI_PIPELINE_SOURCE == 'web'
+
+# ── 2. Higiene repo: data investigasi & .env tidak boleh ter-commit ──────
+hygiene:
+  stage: test
+  script:
+    - |
+      set -e
+      if git ls-files --error-unmatch .env >/dev/null 2>&1; then
+        echo ".env ikut ter-commit"; exit 1
+      fi
+      if git ls-files data | grep -q .; then
+        echo "data/ (riwayat investigasi) ikut ter-commit"; exit 1
+      fi
+      echo "OK: tidak ada .env atau data/ yang ter-track"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == 'web'
+
+# ── 3. Smoke test (163 cek) ──────────────────────────────────────────────
+smoke:
+  stage: test
+  timeout: 20m
+  cache:
+    key: ofac-dataset
+    paths:
+      - data/ofac/
+  script:
+    - node test/smoke.mjs 2>&1 | tee smoke.log
+  artifacts:
+    when: always
+    expire_in: 1 week
+    paths:
+      - smoke.log
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_TAG
+    - if: $CI_PIPELINE_SOURCE == 'web'
+
+# ── 4. Secret Detection (template resmi GitLab) ──────────────────────────
+# Menangkap API key/token yang tidak sengaja ter-commit. Penting untuk alat
+# yang menyimpan riwayat investigasi di disk.
+include:
+  - template: Security/Secret-Detection.gitlab-ci.yml
+
+# ── 5. Release otomatis saat tag v* di-push ──────────────────────────────
+release:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  needs:
+    - job: syntax
+      artifacts: false
+    - job: smoke
+      artifacts: false
+  script:
+    - echo "Membuat release untuk $CI_COMMIT_TAG"
+  release:
+    tag_name: $CI_COMMIT_TAG
+    name: "Chameleon Console $CI_COMMIT_TAG"
+    description: "Rilis $CI_COMMIT_TAG. Lihat CHANGELOG.md untuk daftar perubahan."
+  rules:
+    - if: $CI_COMMIT_TAG

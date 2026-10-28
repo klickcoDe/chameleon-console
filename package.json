@@ -1,6 +1,6 @@
 {
   "name": "chameleon-console",
-  "version": "2.1.0",
+  "version": "1.0.0",
   "description": "Chameleon Console - konsol investigasi OSINT lokal: enumerasi username, verifikasi nomor, recon domain, profil IP, forensik, reputasi, kelemahan web, intelijen ancaman, ekspor Maltego",
   "type": "module",
   "main": "server.js",

@@ -4,7 +4,7 @@
  * /api/osint/* : bgp, mac, sanctions, ip.
  *
  * Yang ditiru:
- *   - bgp       : prefix yang diumumkan + AS pengeriksa + RPKI (RIPEstat, keyless)
+ *   - bgp       : prefix yang diumumkan + AS pengumum + RPKI (RIPEstat, keyless)
  *   - mac       : vendor OUI dari alamat MAC (macvendors.com, keyless)
  *   - sanctions : daftar sanksi OFAC SDN, dicache lokal 24 jam
  *   - ip-intel  : gabungan profil IP + routing BGP
@@ -31,7 +31,7 @@ const OFAC_TTL_MS = 24 * 60 * 60 * 1000;
 /* ── 1. BGP / Routing (RIPEstat) ──────────────────────────────────────── */
 
 /**
- * Informasi routing untuk satu IP: prefix yang diumumkan, AS pengeriksa,
+ * Informasi routing untuk satu IP: prefix yang diumumkan, AS pengumum,
  * dan status validasi RPKI.
  *
  * Sumber: RIPEstat (RIPE NCC) — keyless, data resmi BGP.
