@@ -5,7 +5,7 @@ container** (VPS / Fly.io / Railway / Render) yang menjalankan `server.js`
 apa adanya.
 
 ```
-Browser ──► https://chameleon.vercel.app   (public/index.html + app.js)
+Browser ──► https://chameleon-console.vercel.app   (public/index.html + app.js)
    │
    └── fetch ──► https://api.contoh.com    (server.js di container, CORS)
                       └── data/history.jsonl, cache OFAC, port scan

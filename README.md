@@ -20,6 +20,19 @@ CVE), geocode, cek kebocoran, dan ekspor entity ke Maltego.
 
 **Nol dependensi.** Hanya modul bawaan Node.js — tidak ada `npm install`.
 
+## Demo
+
+Alamat daring proyek ini: **<https://chameleon-console.vercel.app>**
+
+Domain di atas adalah alamat resmi proyek. Bila instance-nya belum berjalan,
+aktifkan lewat salah satu panduan berikut:
+
+- [docs/vercel.md](docs/vercel.md) — UI statis di Vercel, API di container.
+- [docs/deploy.md](docs/deploy.md) — UI + API satu domain (container atau systemd).
+
+`http://localhost:3000` hanya alamat lokal saat server dijalankan di mesin
+sendiri; jangan dipakai sebagai tautan publik.
+
 ## Tampilan
 
 ![Antarmuka Chameleon Console: sidebar 39 tool di kiri, form delapan kolom di tengah](docs/screenshot.png)
@@ -35,7 +48,7 @@ cd chameleon-console
 node server.js          # atau: npm start
 ```
 
-Buka <http://localhost:3000>
+Buka <http://localhost:3000> — alamat lokal di mesin ini.
 
 Butuh Node.js 20.12 ke atas (memakai `process.loadEnvFile` bawaan). Uji seluruh modul dengan:
 
@@ -57,7 +70,7 @@ cp .env.example .env
 docker compose up -d
 ```
 
-Buka <http://localhost:3000>
+Buka <http://localhost:3000> — alamat lokal di mesin ini.
 
 Atau dengan `docker run` langsung:
 
@@ -110,7 +123,7 @@ vendor MAC, dan cek sanksi OFAC.
 
 ---
 
-## Tampilan
+## Tata letak
 
 UI memakai pola **app shell full-bleed**, bukan kolom terpusat:
 
@@ -541,6 +554,11 @@ Transform Provider terhadap sekumpulan entity sekaligus.
 ## API
 
 Semua endpoint JSON kecuali yang berawalan `/api/export/`.
+
+Contoh di bawah memakai `http://localhost:3000` (server lokal). Untuk instance
+daring, ganti dengan basis URL API: `https://chameleon-console.vercel.app` bila
+UI dan API satu domain, atau `https://api.domain-anda.com` bila dipisah
+(lihat [docs/vercel.md](docs/vercel.md)).
 
 | Method | Endpoint | Isi |
 |---|---|---|

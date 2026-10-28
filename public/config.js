@@ -5,7 +5,7 @@
    dan saat UI + API disajikan oleh server.js yang sama).
 
    Isi bila UI dihosting terpisah dari backend, misalnya:
-     - UI  : https://chameleon.vercel.app
+     - UI  : https://chameleon-console.vercel.app
      - API : https://api.contoh.com
    Maka apiBase = "https://api.contoh.com" (tanpa garis miring di akhir).
 

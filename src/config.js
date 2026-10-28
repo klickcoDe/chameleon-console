@@ -93,7 +93,7 @@ export const config = {
 
   // CORS untuk deployment terpisah: UI di Vercel, API di container/VPS.
   // Kosong = CORS mati (UI dan API satu origin, seperti mode lokal/Docker).
-  // Contoh: CORS_ORIGIN=https://chameleon.vercel.app
+  // Contoh: CORS_ORIGIN=https://chameleon-console.vercel.app
   // Wildcard subdomain didukung: https://*.vercel.app
   corsOrigins: String(process.env.CORS_ORIGIN || '')
     .split(',')
