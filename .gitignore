@@ -15,3 +15,5 @@ npm-debug.log*
 # Dependency (proyek ini sengaja tanpa dependensi, tapi jaga-jaga)
 node_modules/
 .aider*
+.vercel
+.env*
